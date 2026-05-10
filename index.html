@@ -1003,24 +1003,29 @@
     function loadSheet(sheetName) {
       return new Promise((resolve, reject) => {
         const cb = '_gviz_cb_' + Math.random().toString(36).slice(2);
-        const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
+        // 강한 캐시 버스팅: 타임스탬프 + 랜덤
+        const bust = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}&_=${bust}`;
         const script = document.createElement('script');
         const timer = setTimeout(() => {
           delete window[cb];
           script.remove();
-          reject(new Error('Sheet load timeout'));
+          reject(new Error(`'${sheetName}' 로드 타임아웃 (15초)`));
         }, 15000);
         window[cb] = (resp) => {
           clearTimeout(timer);
           delete window[cb];
           script.remove();
           try {
+            if (!resp || !resp.table) {
+              reject(new Error(`'${sheetName}' 응답 형식 오류`));
+              return;
+            }
             const cols = resp.table.cols.map(c => c.label || c.id);
             const rows = (resp.table.rows || []).map(r => {
               const obj = {};
               r.c.forEach((cell, i) => {
                 let v = cell ? cell.v : null;
-                // Handle Google Sheets Date(...) objects
                 if (v && typeof v === 'string' && v.startsWith('Date(')) {
                   const m = v.match(/Date\((\d+),(\d+),(\d+)/);
                   if (m) v = `${m[1]}-${String(+m[2]+1).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
@@ -1033,13 +1038,13 @@
               return obj;
             });
             resolve(rows);
-          } catch (e) { reject(e); }
+          } catch (e) { reject(new Error(`'${sheetName}' 파싱 오류: ` + e.message)); }
         };
         script.onerror = () => {
           clearTimeout(timer);
           delete window[cb];
           script.remove();
-          reject(new Error('Sheet load failed'));
+          reject(new Error(`'${sheetName}' 네트워크 오류`));
         };
         script.src = url;
         document.head.appendChild(script);
@@ -1557,14 +1562,33 @@
     async function loadAll() {
       try {
         $('loader').classList.remove('hidden');
-        const [plants, waterLog, growthLog] = await Promise.all([
-          loadSheet(CONFIG.SHEETS.plants).catch(() => []),
-          loadSheet(CONFIG.SHEETS.watering_log).catch(() => []),
-          loadSheet(CONFIG.SHEETS.growth_log).catch(() => [])
+        // Promise.allSettled로 각각 독립 처리: 일부 실패해도 나머지는 유지
+        const results = await Promise.allSettled([
+          loadSheet(CONFIG.SHEETS.plants),
+          loadSheet(CONFIG.SHEETS.watering_log),
+          loadSheet(CONFIG.SHEETS.growth_log)
         ]);
-        state.plants = plants;
-        state.waterLog = waterLog;
-        state.growthLog = growthLog;
+        const [plantsR, waterR, growthR] = results;
+
+        // 식물 데이터: 성공시에만 갱신, 실패시 기존 데이터 유지
+        if (plantsR.status === 'fulfilled') {
+          state.plants = plantsR.value;
+          console.log('[plant-keeper] plants loaded:', state.plants.length);
+        } else {
+          console.error('[plant-keeper] plants load failed:', plantsR.reason);
+          if (state.plants.length > 0) {
+            showToast('일시적으로 시트 연결 실패 (기존 데이터 유지)', 'error');
+          } else {
+            showToast('데이터 로드 실패: ' + plantsR.reason.message, 'error');
+          }
+        }
+
+        if (waterR.status === 'fulfilled') state.waterLog = waterR.value;
+        else console.error('[plant-keeper] water log load failed:', waterR.reason);
+
+        if (growthR.status === 'fulfilled') state.growthLog = growthR.value;
+        else console.error('[plant-keeper] growth log load failed:', growthR.reason);
+
         render();
         await checkNotifications();
       } catch (e) {
