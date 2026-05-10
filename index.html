@@ -986,9 +986,8 @@
     document.querySelectorAll('[data-close]').forEach(btn => {
       btn.onclick = () => closeModal(btn.dataset.close);
     });
-    document.querySelectorAll('.modal-backdrop').forEach(bd => {
-      bd.addEventListener('click', e => { if (e.target === bd) bd.classList.remove('active'); });
-    });
+    // 배경 클릭으로 닫히지 않도록 (실수로 입력 데이터 날아가는 것 방지)
+    // 닫으려면 우상단 ✕ 버튼 또는 취소 버튼 사용
 
     // Radio pill behavior
     document.querySelectorAll('.radio-group').forEach(group => {
