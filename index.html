@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a1a1a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="식물집사" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>🌱 식물집사 · Plant Keeper</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+  <style>
+    :root {
+      --bg: #161616;
+      --surface: #232323;
+      --surface-2: #2d2d2d;
+      --surface-3: #383838;
+      --border: #3d3d3d;
+      --border-soft: #2f2f2f;
+      --green: #7AB87A;
+      --green-deep: #5FA85F;
+      --green-soft: rgba(122, 184, 122, 0.12);
+      --orange: #E8A547;
+      --orange-soft: rgba(232, 165, 71, 0.12);
+      --red: #E25C5C;
+      --red-soft: rgba(226, 92, 92, 0.12);
+      --blue: #6FA8DC;
+      --text: #ECECEC;
+      --text-mid: #B5B5B5;
+      --text-dim: #888888;
+      --text-faint: #5C5C5C;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      --radius: 14px;
+      --radius-sm: 8px;
+      --safe-top: env(safe-area-inset-top, 0);
+      --safe-bottom: env(safe-area-inset-bottom, 0);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overscroll-behavior-y: contain;
+    }
+    body {
+      padding-top: var(--safe-top);
+      padding-bottom: calc(var(--safe-bottom) + 80px);
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    button {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    input, select, textarea {
+      font-family: inherit;
+      font-size: inherit;
+      color: var(--text);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      width: 100%;
+      transition: border-color .15s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--green);
+    }
+    textarea { resize: vertical; min-height: 70px; }
+
+    /* ─── HEADER ─── */
+    .app-header {
+      padding: 18px 20px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+    }
+    .brand {
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .brand-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .brand-logo {
+      font-size: 26px;
+    }
+    .brand-title {
+      font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+    }
+    .brand-sub {
+      font-size: 12px; color: var(--text-dim); letter-spacing: 0.04em;
+    }
+    .header-actions { display: flex; gap: 6px; }
+    .icon-btn {
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      font-size: 16px;
+      transition: background .15s;
+    }
+    .icon-btn:active { background: var(--surface-2); }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 0 20px 18px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      padding: 12px 10px;
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 22px; font-weight: 700; line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .stat-num.water { color: var(--blue); }
+    .stat-num.overdue { color: var(--red); }
+    .stat-label {
+      font-size: 11px; color: var(--text-dim);
+      margin-top: 4px; letter-spacing: 0.02em;
+    }
+
+    /* ─── SECTION ─── */
+    .section {
+      padding: 6px 20px 18px;
+    }
+    .section-title {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .section-title h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .section-title .count {
+      font-size: 11px;
+      color: var(--text-faint);
+      background: var(--surface);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    /* ─── TODAY TASKS ─── */
+    .today-list { display: flex; flex-direction: column; gap: 8px; }
+    .today-card {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+      border: 1px solid var(--border-soft);
+      border-left: 3px solid var(--blue);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .today-card.overdue { border-left-color: var(--red); }
+    .today-thumb {
+      width: 46px; height: 46px;
+      border-radius: 10px;
+      background: var(--surface-3);
+      object-fit: cover;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .today-info { flex: 1; min-width: 0; }
+    .today-name {
+      font-weight: 600; font-size: 15px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .today-meta {
+      font-size: 12px; color: var(--text-dim);
+      margin-top: 2px;
+    }
+    .today-action {
+      background: var(--green);
+      color: #0d2410;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      white-space: nowrap;
+      transition: transform .1s;
+    }
+    .today-action:active { transform: scale(.95); }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--text-faint);
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px dashed var(--border);
+    }
+    .empty-state .ico { font-size: 32px; margin-bottom: 6px; }
+    .empty-state .msg { font-size: 13px; }
+
+    /* ─── PLANT GRID ─── */
+    .plant-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .plant-card {
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: transform .15s, border-color .15s;
+      position: relative;
+    }
+    .plant-card:active { transform: scale(.98); }
+    .plant-photo {
+      width: 100%;
+      aspect-ratio: 1;
+      background: var(--surface-3);
+      object-fit: cover;
+      display: block;
+    }
+    .plant-photo-placeholder {
+      width: 100%;
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, #2a3b2a 0%, #1f2c1f 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px; opacity: 0.5;
+    }
+    .plant-info { padding: 10px 12px 12px; }
+    .plant-name {
+      font-size: 14px; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .plant-badge {
+      position: absolute;
+      top: 8px; left: 8px;
+      background: rgba(20,20,20,0.85);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 999px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .plant-badge.fresh { color: var(--green); }
+    .plant-badge.due { color: var(--blue); }
+    .plant-badge.overdue { color: var(--red); }
+    .health-dot {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 2px rgba(0,0,0,0.6);
+    }
+    .health-dot.caution { background: var(--orange); }
+    .health-dot.sick { background: var(--red); }
+
+    /* ─── FAB ─── */
+    .fab {
+      position: fixed;
+      bottom: calc(var(--safe-bottom) + 20px);
+      right: 20px;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #0d2410;
+      font-size: 28px;
+      font-weight: 300;
+      box-shadow: 0 6px 20px rgba(122, 184, 122, 0.35);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50;
+      transition: transform .15s;
+    }
+    .fab:active { transform: scale(.92); }
+    @media (min-width: 720px) {
+      .fab { right: calc(50% - 360px + 20px); }
+    }
+
+    /* ─── MODAL ─── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      animation: fadeIn .2s;
+    }
+    .modal-backdrop.active { display: flex; }
+    @media (min-width: 720px) { .modal-backdrop { align-items: center; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(40px); } to { transform: translateY(0); } }
+
+    .modal {
+      background: var(--surface);
+      width: 100%;
+      max-width: 720px;
+      max-height: 92vh;
+      border-radius: 20px 20px 0 0;
+      overflow-y: auto;
+      animation: slideUp .25s cubic-bezier(.2,.7,.3,1);
+      padding-bottom: var(--safe-bottom);
+    }
+    @media (min-width: 720px) {
+      .modal { border-radius: 20px; max-height: 88vh; }
+    }
+    .modal-handle {
+      width: 36px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 8px auto 0;
+    }
+    .modal-header {
+      padding: 14px 20px 12px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border-soft);
+      position: sticky; top: 0;
+      background: var(--surface);
+      z-index: 10;
+    }
+    .modal-title { font-size: 17px; font-weight: 600; }
+    .modal-close {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim);
+      font-size: 22px;
+    }
+    .modal-body { padding: 18px 20px 24px; }
+
+    /* ─── FORM ─── */
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .radio-group {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .radio-pill {
+      display: block;
+      text-align: center;
+      padding: 10px 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .radio-pill input { display: none; }
+    .radio-pill.active {
+      background: var(--green-soft);
+      border-color: var(--green);
+      color: var(--green);
+    }
+    .photo-upload {
+      width: 100%;
+      aspect-ratio: 16/10;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 6px;
+      color: var(--text-dim);
+      font-size: 13px;
+      background: var(--surface-2);
+      cursor: pointer;
+      overflow: hidden;
+      position: relative;
+    }
+    .photo-upload .ico { font-size: 28px; }
+    .photo-upload img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .photo-upload input[type=file] { display: none; }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-weight: 600;
+      text-align: center;
+      transition: opacity .15s;
+    }
+    .btn:active { opacity: 0.8; }
+    .btn-primary { background: var(--green); color: #0d2410; }
+    .btn-secondary { background: var(--surface-3); color: var(--text); }
+    .btn-danger { background: var(--red-soft); color: var(--red); border: 1px solid rgba(226,92,92,0.3); }
+    .btn:disabled { opacity: 0.5; pointer-events: none; }
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    /* ─── PLANT DETAIL ─── */
+    .detail-hero {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: var(--surface-3);
+      object-fit: cover;
+    }
+    .detail-hero-placeholder {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: linear-gradient(135deg, #2a3b2a, #1f2c1f);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 80px; opacity: 0.4;
+    }
+    .detail-content { padding: 18px 20px 24px; }
+    .detail-title {
+      font-size: 22px; font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+    .detail-sub {
+      font-size: 13px; color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+    .detail-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .quick-btn {
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      border: 1px solid var(--border-soft);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 4px;
+    }
+    .quick-btn .ico { font-size: 20px; }
+    .quick-btn.water { color: var(--blue); border-color: rgba(111,168,220,0.3); }
+    .quick-btn.fert { color: var(--orange); border-color: rgba(232,165,71,0.3); }
+
+    .info-grid {
+      background: var(--surface-2);
+      border-radius: var(--radius);
+      padding: 4px 14px;
+      margin-bottom: 18px;
+    }
+    .info-row {
+      display: flex; justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-soft);
+      font-size: 14px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-key { color: var(--text-dim); font-size: 13px; }
+    .info-val { font-weight: 500; text-align: right; }
+
+    .timeline {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .timeline-item {
+      display: flex; gap: 12px;
+      background: var(--surface-2);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+    }
+    .timeline-photo {
+      width: 64px; height: 64px;
+      border-radius: 8px;
+      background: var(--surface-3);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .timeline-photo-empty {
+      width: 64px; height: 64px;
+      border-radius: 8px;
+      background: var(--surface-3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; opacity: .4;
+      flex-shrink: 0;
+    }
+    .timeline-body { flex: 1; min-width: 0; }
+    .timeline-date {
+      font-size: 12px; color: var(--text-dim);
+      margin-bottom: 2px;
+    }
+    .timeline-note { font-size: 13px; }
+
+    /* ─── TOAST ─── */
+    .toast {
+      position: fixed;
+      bottom: calc(var(--safe-bottom) + 90px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface-3);
+      color: var(--text);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+      z-index: 200;
+      opacity: 0;
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+    .toast.error { background: var(--red); color: white; }
+    .toast.success { background: var(--green); color: #0d2410; }
+
+    /* ─── LOADING ─── */
+    .loader {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .full-loader {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 14px;
+      z-index: 500;
+    }
+    .full-loader.hidden { display: none; }
+    .full-loader .pulse {
+      font-size: 48px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.1); opacity: 1; }
+    }
+    .full-loader .msg {
+      color: var(--text-dim); font-size: 13px;
+    }
+
+    /* ─── FOOTER ─── */
+    .app-footer {
+      text-align: center;
+      padding: 30px 20px 20px;
+      color: var(--text-faint);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+    }
+
+    /* ─── INSTALL PROMPT ─── */
+    .install-banner {
+      display: none;
+      margin: 0 20px 16px;
+      padding: 12px 14px;
+      background: linear-gradient(135deg, rgba(122,184,122,0.15), rgba(122,184,122,0.05));
+      border: 1px solid rgba(122,184,122,0.3);
+      border-radius: var(--radius);
+      align-items: center; gap: 12px;
+    }
+    .install-banner.show { display: flex; }
+    .install-banner .ico { font-size: 22px; }
+    .install-banner .body { flex: 1; }
+    .install-banner .ttl { font-size: 13px; font-weight: 600; }
+    .install-banner .desc { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+    .install-banner button {
+      padding: 6px 12px;
+      background: var(--green);
+      color: #0d2410;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .install-banner .close {
+      background: transparent; color: var(--text-dim);
+      padding: 6px; font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loader -->
+  <div id="loader" class="full-loader">
+    <div class="pulse">🌱</div>
+    <div class="msg">식물 깨우는 중...</div>
+  </div>
+
+  <!-- App view: Dashboard -->
+  <div id="dashboardView">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-row">
+          <span class="brand-logo">🌱</span>
+          <span class="brand-title">식물집사</span>
+        </div>
+        <div class="brand-sub" id="todayDate">—</div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="notifyBtn" title="알림">🔔</button>
+        <button class="icon-btn" id="reloadBtn" title="새로고침">↻</button>
+      </div>
+    </header>
+
+    <div id="installBanner" class="install-banner">
+      <div class="ico">📲</div>
+      <div class="body">
+        <div class="ttl">홈 화면에 설치하기</div>
+        <div class="desc">앱처럼 사용할 수 있어요</div>
+      </div>
+      <button id="installBtn">설치</button>
+      <button class="close" id="installClose">✕</button>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">전체</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num water" id="statWater">0</div>
+        <div class="stat-label">물 필요</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num overdue" id="statOverdue">0</div>
+        <div class="stat-label">놓침</div>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>오늘의 할 일</h2>
+        <span class="count" id="todayCount">0</span>
+      </div>
+      <div id="todayList" class="today-list"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>식물 컬렉션</h2>
+        <span class="count" id="plantCount">0</span>
+      </div>
+      <div id="plantGrid" class="plant-grid"></div>
+    </section>
+
+    <footer class="app-footer">DEVELOPED BY DONGGU KANG</footer>
+  </div>
+
+  <!-- FAB -->
+  <button id="fab" class="fab" aria-label="식물 추가">+</button>
+
+  <!-- Modal: Add/Edit Plant -->
+  <div id="plantFormModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title" id="plantFormTitle">새 식물 등록</div>
+        <button class="modal-close" data-close="plantFormModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="plantForm">
+          <input type="hidden" id="plantId" />
+
+          <div class="form-group">
+            <label class="form-label">대표 사진</label>
+            <label class="photo-upload" id="photoUpload">
+              <div id="photoPlaceholder">
+                <div class="ico">📷</div>
+                <div>탭해서 사진 추가</div>
+              </div>
+              <img id="photoPreview" style="display:none" alt="" />
+              <input type="file" id="photoInput" accept="image/*" />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">이름 *</label>
+            <input type="text" id="fName" placeholder="예: 몬스테라 알보, 루비고무나무" required maxlength="40" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">구매일</label>
+              <input type="date" id="fPurchaseDate" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">구매처</label>
+              <input type="text" id="fVendor" placeholder="예: 화원이름" maxlength="30" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">최근 분갈이일</label>
+            <input type="date" id="fRepotDate" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">물주기 주기 (일)</label>
+              <input type="number" id="fWaterInterval" min="1" max="180" value="7" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">최근 물준 날</label>
+              <input type="date" id="fLastWatered" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">비료 주기 (일)</label>
+              <input type="number" id="fFertInterval" min="0" max="365" value="30" placeholder="0=사용안함" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">최근 비료일</label>
+              <input type="date" id="fLastFert" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">광량</label>
+            <div class="radio-group" id="lightRadio">
+              <label class="radio-pill"><input type="radio" name="light" value="직사광"><span>직사광</span></label>
+              <label class="radio-pill active"><input type="radio" name="light" value="반음지" checked><span>반음지</span></label>
+              <label class="radio-pill"><input type="radio" name="light" value="음지"><span>음지</span></label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">위치</label>
+            <input type="text" id="fLocation" placeholder="예: 거실 창가, 베란다" maxlength="30" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">건강 상태</label>
+            <div class="radio-group" id="healthRadio">
+              <label class="radio-pill active"><input type="radio" name="health" value="good" checked><span>🟢 건강</span></label>
+              <label class="radio-pill"><input type="radio" name="health" value="caution"><span>🟡 주의</span></label>
+              <label class="radio-pill"><input type="radio" name="health" value="sick"><span>🔴 병해충</span></label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">메모</label>
+            <textarea id="fNotes" placeholder="잎 모양, 특이사항, 관리 팁 등" maxlength="500"></textarea>
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn btn-secondary" data-close="plantFormModal">취소</button>
+            <button type="submit" class="btn btn-primary" id="plantFormSubmit">저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Plant Detail -->
+  <div id="plantDetailModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">식물 상세</div>
+        <button class="modal-close" data-close="plantDetailModal">✕</button>
+      </div>
+      <div id="plantDetailBody"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Growth Record -->
+  <div id="growthFormModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">성장 기록 추가</div>
+        <button class="modal-close" data-close="growthFormModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="growthForm">
+          <input type="hidden" id="gPlantId" />
+
+          <div class="form-group">
+            <label class="form-label">사진</label>
+            <label class="photo-upload" id="gPhotoUpload">
+              <div id="gPhotoPlaceholder">
+                <div class="ico">📷</div>
+                <div>탭해서 사진 추가</div>
+              </div>
+              <img id="gPhotoPreview" style="display:none" alt="" />
+              <input type="file" id="gPhotoInput" accept="image/*" />
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">기록일</label>
+            <input type="date" id="gDate" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">메모</label>
+            <textarea id="gNotes" placeholder="새 잎이 났어요 / 키 컸어요 / 꽃이 폈어요" maxlength="300"></textarea>
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn btn-secondary" data-close="growthFormModal">취소</button>
+            <button type="submit" class="btn btn-primary" id="growthSubmit">기록</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // ╔═══════════════════════════════════════╗
+    // ║           CONFIGURATION                ║
+    // ╚═══════════════════════════════════════╝
+    const CONFIG = {
+      SHEET_ID: '1oTIyJyOpLuIDvOZfcGDgP3a8hz4ss0frAIGM1nb3rfY',
+      SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxzA_U5jbojN-VSG9nCYymEuH3AtMwnd-VxO3Sz7iq_YNWhIrkO09QyaWg8PkrRx64zKw/exec',
+      SHEETS: {
+        plants: 'plants',
+        watering_log: 'watering_log',
+        growth_log: 'growth_log'
+      }
+    };
+
+    // ╔═══════════════════════════════════════╗
+    // ║           STATE                        ║
+    // ╚═══════════════════════════════════════╝
+    const state = {
+      plants: [],
+      waterLog: [],
+      growthLog: [],
+      selectedPlantId: null,
+      pendingPhoto: null,        // base64 for plant form
+      pendingGrowthPhoto: null,  // base64 for growth form
+      installPrompt: null
+    };
+
+    // ╔═══════════════════════════════════════╗
+    // ║           HELPERS                      ║
+    // ╚═══════════════════════════════════════╝
+    const $ = (id) => document.getElementById(id);
+    const today = () => new Date().toISOString().slice(0, 10);
+    const fmtDate = (d) => {
+      if (!d) return '—';
+      const dt = new Date(d);
+      if (isNaN(dt)) return d;
+      return dt.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' });
+    };
+    const daysBetween = (d1, d2) => Math.round((new Date(d2) - new Date(d1)) / 86400000);
+    const driveImg = (url) => {
+      if (!url) return null;
+      // Already full URL
+      if (url.startsWith('http')) {
+        // extract id from various Drive url formats
+        const m = url.match(/[-\w]{25,}/);
+        if (m) return `https://drive.google.com/thumbnail?id=${m[0]}&sz=w800`;
+        return url;
+      }
+      return `https://drive.google.com/thumbnail?id=${url}&sz=w800`;
+    };
+    const showToast = (msg, type = '') => {
+      const t = $('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + type;
+      setTimeout(() => t.classList.remove('show'), 2200);
+    };
+    const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    // Modal control
+    const openModal = (id) => $(id).classList.add('active');
+    const closeModal = (id) => $(id).classList.remove('active');
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.onclick = () => closeModal(btn.dataset.close);
+    });
+    document.querySelectorAll('.modal-backdrop').forEach(bd => {
+      bd.addEventListener('click', e => { if (e.target === bd) bd.classList.remove('active'); });
+    });
+
+    // Radio pill behavior
+    document.querySelectorAll('.radio-group').forEach(group => {
+      group.addEventListener('change', e => {
+        group.querySelectorAll('.radio-pill').forEach(p => p.classList.remove('active'));
+        e.target.closest('.radio-pill').classList.add('active');
+      });
+    });
+
+    // ╔═══════════════════════════════════════╗
+    // ║      GOOGLE SHEETS READ (gviz)         ║
+    // ╚═══════════════════════════════════════╝
+    function loadSheet(sheetName) {
+      return new Promise((resolve, reject) => {
+        const cb = '_gviz_cb_' + Math.random().toString(36).slice(2);
+        const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
+        const script = document.createElement('script');
+        const timer = setTimeout(() => {
+          delete window[cb];
+          script.remove();
+          reject(new Error('Sheet load timeout'));
+        }, 15000);
+        window[cb] = (resp) => {
+          clearTimeout(timer);
+          delete window[cb];
+          script.remove();
+          try {
+            const cols = resp.table.cols.map(c => c.label || c.id);
+            const rows = (resp.table.rows || []).map(r => {
+              const obj = {};
+              r.c.forEach((cell, i) => {
+                let v = cell ? cell.v : null;
+                // Handle Google Sheets Date(...) objects
+                if (v && typeof v === 'string' && v.startsWith('Date(')) {
+                  const m = v.match(/Date\((\d+),(\d+),(\d+)/);
+                  if (m) v = `${m[1]}-${String(+m[2]+1).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+                }
+                if (v instanceof Date) {
+                  v = v.toISOString().slice(0, 10);
+                }
+                obj[cols[i]] = v;
+              });
+              return obj;
+            });
+            resolve(rows);
+          } catch (e) { reject(e); }
+        };
+        script.onerror = () => {
+          clearTimeout(timer);
+          delete window[cb];
+          script.remove();
+          reject(new Error('Sheet load failed'));
+        };
+        script.src = url;
+        document.head.appendChild(script);
+      });
+    }
+
+    // ╔═══════════════════════════════════════╗
+    // ║     APPS SCRIPT WRITE                  ║
+    // ╚═══════════════════════════════════════╝
+    async function callScript(action, payload = {}) {
+      if (!CONFIG.SCRIPT_URL || CONFIG.SCRIPT_URL.startsWith('YOUR_')) {
+        throw new Error('Apps Script URL이 설정되지 않았습니다');
+      }
+      const res = await fetch(CONFIG.SCRIPT_URL, {
+        method: 'POST',
+        redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action, ...payload })
+      });
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch { throw new Error('서버 응답 오류: ' + text.slice(0, 100)); }
+      if (!data.ok) throw new Error(data.error || '알 수 없는 오류');
+      return data;
+    }
+
+    async function fileToBase64(file) {
+      return new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(',')[1]);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+    }
+
+    async function uploadPhoto(file) {
+      const base64 = await fileToBase64(file);
+      const r = await callScript('uploadPhoto', {
+        base64,
+        mimeType: file.type,
+        filename: file.name || `plant_${Date.now()}.jpg`
+      });
+      return r.fileId;
+    }
+
+    // ╔═══════════════════════════════════════╗
+    // ║     CALCULATIONS                       ║
+    // ╚═══════════════════════════════════════╝
+    function calcWaterStatus(plant) {
+      const interval = +plant.watering_interval_days || 7;
+      const last = plant.last_watered_date;
+      if (!last) return { daysLeft: 0, status: 'due', label: '오늘 물주기' };
+      const elapsed = daysBetween(last, today());
+      const daysLeft = interval - elapsed;
+      if (daysLeft < 0) return { daysLeft, status: 'overdue', label: `${Math.abs(daysLeft)}일 늦음` };
+      if (daysLeft === 0) return { daysLeft, status: 'due', label: '오늘 물주기' };
+      if (daysLeft <= 1) return { daysLeft, status: 'due', label: '내일 물주기' };
+      return { daysLeft, status: 'fresh', label: `${daysLeft}일 남음` };
+    }
+    function calcFertStatus(plant) {
+      const interval = +plant.fertilizer_interval_days || 0;
+      if (!interval) return null;
+      const last = plant.last_fertilized_date;
+      if (!last) return { daysLeft: 0, status: 'due' };
+      const elapsed = daysBetween(last, today());
+      return { daysLeft: interval - elapsed, status: interval - elapsed < 0 ? 'overdue' : 'fresh' };
+    }
+
+    // ╔═══════════════════════════════════════╗
+    // ║     RENDER                             ║
+    // ╚═══════════════════════════════════════╝
+    function render() {
+      const today_d = new Date();
+      $('todayDate').textContent = today_d.toLocaleDateString('ko-KR', {
+        month: 'long', day: 'numeric', weekday: 'long'
+      });
+
+      // Compute statuses
+      const enriched = state.plants
+        .filter(p => p.status !== 'dead')
+        .map(p => ({ ...p, water: calcWaterStatus(p), fert: calcFertStatus(p) }));
+
+      // Stats
+      $('statTotal').textContent = enriched.length;
+      $('statWater').textContent = enriched.filter(p => p.water.status === 'due').length;
+      $('statOverdue').textContent = enriched.filter(p => p.water.status === 'overdue').length;
+      $('plantCount').textContent = enriched.length;
+
+      // Today's tasks: water due/overdue + fertilizer due
+      const tasks = [];
+      enriched.forEach(p => {
+        if (p.water.status === 'due' || p.water.status === 'overdue') {
+          tasks.push({ plant: p, type: 'water', urgent: p.water.status === 'overdue', label: p.water.label });
+        }
+        if (p.fert && (p.fert.status === 'due' || p.fert.status === 'overdue')) {
+          tasks.push({ plant: p, type: 'fert', urgent: p.fert.status === 'overdue', label: p.fert.daysLeft < 0 ? `비료 ${Math.abs(p.fert.daysLeft)}일 늦음` : '비료 줄 시간' });
+        }
+      });
+      tasks.sort((a, b) => (b.urgent - a.urgent));
+
+      $('todayCount').textContent = tasks.length;
+      const todayList = $('todayList');
+      if (tasks.length === 0) {
+        todayList.innerHTML = `<div class="empty-state">
+          <div class="ico">🌿</div>
+          <div class="msg">모든 식물이 만족스러워합니다</div>
+        </div>`;
+      } else {
+        todayList.innerHTML = tasks.map(t => {
+          const photoSrc = driveImg(t.plant.photo_url);
+          const thumb = photoSrc
+            ? `<img class="today-thumb" src="${photoSrc}" alt="" onerror="this.outerHTML='<div class=today-thumb>🌿</div>'" />`
+            : `<div class="today-thumb">🌿</div>`;
+          const actionLabel = t.type === 'water' ? '💧 물줬어요' : '🌾 비료줬어요';
+          return `<div class="today-card ${t.urgent ? 'overdue' : ''}">
+            ${thumb}
+            <div class="today-info">
+              <div class="today-name">${escHtml(t.plant.name)}</div>
+              <div class="today-meta">${escHtml(t.label)}</div>
+            </div>
+            <button class="today-action" onclick="quickAction('${t.plant.id}','${t.type}')">${actionLabel}</button>
+          </div>`;
+        }).join('');
+      }
+
+      // Plant grid
+      const grid = $('plantGrid');
+      if (enriched.length === 0) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+          <div class="ico">🪴</div>
+          <div class="msg">우측 하단 + 버튼으로 첫 식물을 등록하세요</div>
+        </div>`;
+      } else {
+        grid.innerHTML = enriched.map(p => {
+          const photoSrc = driveImg(p.photo_url);
+          const photo = photoSrc
+            ? `<img class="plant-photo" src="${photoSrc}" alt="" onerror="this.outerHTML='<div class=plant-photo-placeholder>🌿</div>'" />`
+            : `<div class="plant-photo-placeholder">🌿</div>`;
+          const wIcon = p.water.status === 'overdue' ? '🚨' : (p.water.status === 'due' ? '💧' : '✓');
+          return `<div class="plant-card" onclick="openPlantDetail('${p.id}')">
+            ${photo}
+            <div class="plant-badge ${p.water.status}">${wIcon} ${escHtml(p.water.label)}</div>
+            <div class="health-dot ${p.health_status === 'caution' ? 'caution' : (p.health_status === 'sick' ? 'sick' : '')}"></div>
+            <div class="plant-info">
+              <div class="plant-name">${escHtml(p.name)}</div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    // ╔═══════════════════════════════════════╗
+    // ║     ACTIONS                            ║
+    // ╚═══════════════════════════════════════╝
+    window.quickAction = async function(plantId, type) {
+      const action = type === 'water' ? 'logWatering' : 'logFertilizing';
+      try {
+        showToast(type === 'water' ? '💧 기록 중...' : '🌾 기록 중...');
+        await callScript(action, { plant_id: plantId, date: today() });
+        // Update local state
+        const p = state.plants.find(x => x.id === plantId);
+        if (p) {
+          if (type === 'water') p.last_watered_date = today();
+          else p.last_fertilized_date = today();
+        }
+        render();
+        showToast(type === 'water' ? '💧 물 주기 완료!' : '🌾 비료 완료!', 'success');
+      } catch (e) {
+        showToast('실패: ' + e.message, 'error');
+      }
+    };
+
+    window.openPlantDetail = function(id) {
+      const p = state.plants.find(x => x.id === id);
+      if (!p) return;
+      state.selectedPlantId = id;
+      const water = calcWaterStatus(p);
+      const fert = calcFertStatus(p);
+      const photoSrc = driveImg(p.photo_url);
+      const heroEl = photoSrc
+        ? `<img class="detail-hero" src="${photoSrc}" alt="" onerror="this.outerHTML='<div class=detail-hero-placeholder>🌿</div>'" />`
+        : `<div class="detail-hero-placeholder">🌿</div>`;
+
+      const records = state.growthLog
+        .filter(r => r.plant_id === id)
+        .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+      const timeline = records.length === 0
+        ? `<div class="empty-state"><div class="ico">📔</div><div class="msg">아직 성장 기록이 없어요</div></div>`
+        : records.map(r => {
+          const ph = driveImg(r.photo_url);
+          const photoEl = ph
+            ? `<img class="timeline-photo" src="${ph}" alt="" onerror="this.outerHTML='<div class=timeline-photo-empty>📷</div>'" />`
+            : `<div class="timeline-photo-empty">📔</div>`;
+          return `<div class="timeline-item">
+            ${photoEl}
+            <div class="timeline-body">
+              <div class="timeline-date">${fmtDate(r.date)}</div>
+              <div class="timeline-note">${escHtml(r.notes || '(메모 없음)')}</div>
+            </div>
+          </div>`;
+        }).join('');
+
+      const repotInfo = p.last_repot_date
+        ? (() => { const d = daysBetween(p.last_repot_date, today()); const m = Math.floor(d / 30); return `${fmtDate(p.last_repot_date)} <span style="color:var(--text-faint);font-size:11px">· ${m}개월 전</span>`; })()
+        : '—';
+
+      const healthIcon = { good: '🟢 건강', caution: '🟡 주의', sick: '🔴 병해충' }[p.health_status] || '🟢 건강';
+
+      $('plantDetailBody').innerHTML = `
+        ${heroEl}
+        <div class="detail-content">
+          <div class="detail-title">${escHtml(p.name)}</div>
+          <div class="detail-sub">${escHtml(p.location || '위치 미지정')} · ${escHtml(p.light_level || '반음지')}</div>
+
+          <div class="detail-actions">
+            <button class="quick-btn water" onclick="quickAction('${p.id}','water')">
+              <span class="ico">💧</span><span>물 줬어요</span>
+            </button>
+            ${(+p.fertilizer_interval_days > 0)
+              ? `<button class="quick-btn fert" onclick="quickAction('${p.id}','fert')"><span class="ico">🌾</span><span>비료 줬어요</span></button>`
+              : `<button class="quick-btn" style="opacity:.4" disabled><span class="ico">🌾</span><span>비료 미사용</span></button>`}
+          </div>
+
+          <div class="info-grid">
+            <div class="info-row"><span class="info-key">물주기</span><span class="info-val">${escHtml(p.watering_interval_days || 7)}일마다 · <span style="color:var(--blue)">${escHtml(water.label)}</span></span></div>
+            <div class="info-row"><span class="info-key">최근 물주기</span><span class="info-val">${fmtDate(p.last_watered_date)}</span></div>
+            ${(+p.fertilizer_interval_days > 0) ? `
+              <div class="info-row"><span class="info-key">비료 주기</span><span class="info-val">${escHtml(p.fertilizer_interval_days)}일마다</span></div>
+              <div class="info-row"><span class="info-key">최근 비료</span><span class="info-val">${fmtDate(p.last_fertilized_date)}</span></div>
+            ` : ''}
+            <div class="info-row"><span class="info-key">건강 상태</span><span class="info-val">${healthIcon}</span></div>
+            <div class="info-row"><span class="info-key">최근 분갈이</span><span class="info-val">${repotInfo}</span></div>
+            <div class="info-row"><span class="info-key">구매일</span><span class="info-val">${fmtDate(p.purchase_date)}</span></div>
+            <div class="info-row"><span class="info-key">구매처</span><span class="info-val">${escHtml(p.vendor || '—')}</span></div>
+          </div>
+
+          ${p.notes ? `<div style="background:var(--surface-2);padding:12px 14px;border-radius:var(--radius-sm);margin-bottom:18px;font-size:13px;color:var(--text-mid);white-space:pre-wrap">${escHtml(p.notes)}</div>` : ''}
+
+          <div class="section-title" style="padding:0;margin-bottom:10px">
+            <h2>성장 기록</h2>
+            <button onclick="openGrowthForm('${p.id}')" style="font-size:12px;color:var(--green);padding:4px 10px;background:var(--green-soft);border-radius:999px">+ 기록 추가</button>
+          </div>
+          <div class="timeline">${timeline}</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:24px">
+            <button class="btn btn-secondary" onclick="editPlant('${p.id}')">✏️ 정보 수정</button>
+            <button class="btn btn-danger" onclick="deletePlant('${p.id}')">🗑 삭제</button>
+          </div>
+        </div>
+      `;
+      openModal('plantDetailModal');
+    };
+
+    window.openGrowthForm = function(plantId) {
+      $('gPlantId').value = plantId;
+      $('gDate').value = today();
+      $('gNotes').value = '';
+      $('gPhotoPreview').style.display = 'none';
+      $('gPhotoPreview').src = '';
+      $('gPhotoPlaceholder').style.display = '';
+      state.pendingGrowthPhoto = null;
+      openModal('growthFormModal');
+    };
+
+    window.editPlant = function(id) {
+      const p = state.plants.find(x => x.id === id);
+      if (!p) return;
+      closeModal('plantDetailModal');
+      openPlantForm(p);
+    };
+
+    window.deletePlant = async function(id) {
+      const p = state.plants.find(x => x.id === id);
+      if (!p) return;
+      if (!confirm(`'${p.name}' 정말 삭제할까요? 성장 기록도 함께 사라집니다.`)) return;
+      try {
+        showToast('삭제 중...');
+        await callScript('deletePlant', { plant_id: id });
+        state.plants = state.plants.filter(x => x.id !== id);
+        state.growthLog = state.growthLog.filter(r => r.plant_id !== id);
+        closeModal('plantDetailModal');
+        render();
+        showToast('삭제됨', 'success');
+      } catch (e) {
+        showToast('실패: ' + e.message, 'error');
+      }
+    };
+
+    function openPlantForm(plant) {
+      const isEdit = !!plant;
+      $('plantFormTitle').textContent = isEdit ? '식물 정보 수정' : '새 식물 등록';
+      $('plantId').value = isEdit ? plant.id : '';
+      $('fName').value = isEdit ? plant.name : '';
+      $('fPurchaseDate').value = isEdit ? (plant.purchase_date || '') : '';
+      $('fVendor').value = isEdit ? (plant.vendor || '') : '';
+      $('fRepotDate').value = isEdit ? (plant.last_repot_date || '') : '';
+      $('fWaterInterval').value = isEdit ? (plant.watering_interval_days || 7) : 7;
+      $('fLastWatered').value = isEdit ? (plant.last_watered_date || '') : today();
+      $('fFertInterval').value = isEdit ? (plant.fertilizer_interval_days || 0) : 30;
+      $('fLastFert').value = isEdit ? (plant.last_fertilized_date || '') : '';
+      $('fLocation').value = isEdit ? (plant.location || '') : '';
+      $('fNotes').value = isEdit ? (plant.notes || '') : '';
+
+      // light radio
+      const light = isEdit ? (plant.light_level || '반음지') : '반음지';
+      document.querySelectorAll('#lightRadio input').forEach(r => {
+        r.checked = (r.value === light);
+        r.closest('.radio-pill').classList.toggle('active', r.checked);
+      });
+      // health radio
+      const health = isEdit ? (plant.health_status || 'good') : 'good';
+      document.querySelectorAll('#healthRadio input').forEach(r => {
+        r.checked = (r.value === health);
+        r.closest('.radio-pill').classList.toggle('active', r.checked);
+      });
+
+      // photo preview
+      state.pendingPhoto = null;
+      if (isEdit && plant.photo_url) {
+        $('photoPreview').src = driveImg(plant.photo_url);
+        $('photoPreview').style.display = '';
+        $('photoPlaceholder').style.display = 'none';
+        $('photoPreview').dataset.existing = plant.photo_url;
+      } else {
+        $('photoPreview').src = '';
+        $('photoPreview').style.display = 'none';
+        $('photoPlaceholder').style.display = '';
+        delete $('photoPreview').dataset.existing;
+      }
+      openModal('plantFormModal');
+    }
+
+    // ╔═══════════════════════════════════════╗
+    // ║     FORM HANDLERS                      ║
+    // ╚═══════════════════════════════════════╝
+    $('photoInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const base64 = await fileToBase64(file);
+      $('photoPreview').src = `data:${file.type};base64,${base64}`;
+      $('photoPreview').style.display = '';
+      $('photoPlaceholder').style.display = 'none';
+      state.pendingPhoto = { base64, mimeType: file.type, filename: file.name };
+    });
+
+    $('gPhotoInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const base64 = await fileToBase64(file);
+      $('gPhotoPreview').src = `data:${file.type};base64,${base64}`;
+      $('gPhotoPreview').style.display = '';
+      $('gPhotoPlaceholder').style.display = 'none';
+      state.pendingGrowthPhoto = { base64, mimeType: file.type, filename: file.name };
+    });
+
+    $('plantForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = $('plantFormSubmit');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="loader"></span>';
+      try {
+        let photoUrl = $('photoPreview').dataset.existing || '';
+        if (state.pendingPhoto) {
+          showToast('사진 업로드 중...');
+          const r = await callScript('uploadPhoto', state.pendingPhoto);
+          photoUrl = r.fileId;
+        }
+        const data = {
+          id: $('plantId').value || ('p_' + Date.now()),
+          name: $('fName').value.trim(),
+          photo_url: photoUrl,
+          purchase_date: $('fPurchaseDate').value,
+          vendor: $('fVendor').value.trim(),
+          last_repot_date: $('fRepotDate').value,
+          watering_interval_days: +$('fWaterInterval').value || 7,
+          last_watered_date: $('fLastWatered').value,
+          fertilizer_interval_days: +$('fFertInterval').value || 0,
+          last_fertilized_date: $('fLastFert').value,
+          light_level: document.querySelector('#lightRadio input:checked').value,
+          location: $('fLocation').value.trim(),
+          health_status: document.querySelector('#healthRadio input:checked').value,
+          notes: $('fNotes').value.trim(),
+          status: 'active'
+        };
+        const isEdit = !!$('plantId').value;
+        await callScript(isEdit ? 'updatePlant' : 'addPlant', { plant: data });
+
+        // local update
+        if (isEdit) {
+          const idx = state.plants.findIndex(x => x.id === data.id);
+          if (idx >= 0) state.plants[idx] = { ...state.plants[idx], ...data };
+        } else {
+          state.plants.unshift(data);
+        }
+        closeModal('plantFormModal');
+        render();
+        showToast(isEdit ? '수정됨 ✓' : '등록 완료 🌱', 'success');
+      } catch (err) {
+        showToast('실패: ' + err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '저장';
+      }
+    });
+
+    $('growthForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = $('growthSubmit');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loader"></span>';
+      try {
+        let photoUrl = '';
+        if (state.pendingGrowthPhoto) {
+          showToast('사진 업로드 중...');
+          const r = await callScript('uploadPhoto', state.pendingGrowthPhoto);
+          photoUrl = r.fileId;
+        }
+        const record = {
+          id: 'g_' + Date.now(),
+          plant_id: $('gPlantId').value,
+          date: $('gDate').value || today(),
+          photo_url: photoUrl,
+          notes: $('gNotes').value.trim()
+        };
+        await callScript('addGrowthRecord', { record });
+        state.growthLog.unshift(record);
+        closeModal('growthFormModal');
+        // re-open detail to show new record
+        const pid = record.plant_id;
+        setTimeout(() => openPlantDetail(pid), 200);
+        showToast('기록 완료 📔', 'success');
+      } catch (err) {
+        showToast('실패: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '기록';
+      }
+    });
+
+    // ╔═══════════════════════════════════════╗
+    // ║     NOTIFICATIONS                      ║
+    // ╚═══════════════════════════════════════╝
+    async function checkNotifications() {
+      if (!('Notification' in window)) return;
+      if (Notification.permission !== 'granted') return;
+      const enriched = state.plants
+        .filter(p => p.status !== 'dead')
+        .map(p => ({ ...p, water: calcWaterStatus(p) }));
+      const due = enriched.filter(p => p.water.status === 'due' || p.water.status === 'overdue');
+      if (due.length === 0) return;
+      // Don't spam: only notify once per day
+      const lastNotify = localStorage.getItem('lastNotify');
+      if (lastNotify === today()) return;
+      const reg = await navigator.serviceWorker.ready;
+      const body = due.length === 1
+        ? `${due[0].name} 식물에 물을 줄 시간이에요`
+        : `${due.length}개 식물이 물을 기다리고 있어요`;
+      reg.showNotification('🌱 식물집사', {
+        body,
+        icon: 'icon-192.png',
+        badge: 'icon-192.png',
+        tag: 'water-reminder'
+      });
+      localStorage.setItem('lastNotify', today());
+    }
+
+    $('notifyBtn').onclick = async () => {
+      if (!('Notification' in window)) {
+        showToast('이 브라우저는 알림 미지원');
+        return;
+      }
+      if (Notification.permission === 'granted') {
+        showToast('알림 이미 켜져 있어요 🔔');
+        await checkNotifications();
+        return;
+      }
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        showToast('알림 켜졌어요!', 'success');
+        await checkNotifications();
+      } else {
+        showToast('알림이 거부되었어요');
+      }
+    };
+
+    // ╔═══════════════════════════════════════╗
+    // ║     PWA INSTALL                        ║
+    // ╚═══════════════════════════════════════╝
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      state.installPrompt = e;
+      if (!localStorage.getItem('installDismissed')) {
+        $('installBanner').classList.add('show');
+      }
+    });
+    $('installBtn').onclick = async () => {
+      if (!state.installPrompt) return;
+      state.installPrompt.prompt();
+      const r = await state.installPrompt.userChoice;
+      if (r.outcome === 'accepted') $('installBanner').classList.remove('show');
+      state.installPrompt = null;
+    };
+    $('installClose').onclick = () => {
+      $('installBanner').classList.remove('show');
+      localStorage.setItem('installDismissed', '1');
+    };
+
+    // ╔═══════════════════════════════════════╗
+    // ║     INIT                               ║
+    // ╚═══════════════════════════════════════╝
+    $('fab').onclick = () => openPlantForm(null);
+    $('reloadBtn').onclick = () => loadAll();
+
+    async function loadAll() {
+      try {
+        $('loader').classList.remove('hidden');
+        const [plants, waterLog, growthLog] = await Promise.all([
+          loadSheet(CONFIG.SHEETS.plants).catch(() => []),
+          loadSheet(CONFIG.SHEETS.watering_log).catch(() => []),
+          loadSheet(CONFIG.SHEETS.growth_log).catch(() => [])
+        ]);
+        state.plants = plants;
+        state.waterLog = waterLog;
+        state.growthLog = growthLog;
+        render();
+        await checkNotifications();
+      } catch (e) {
+        showToast('데이터 로드 실패: ' + e.message, 'error');
+        render();
+      } finally {
+        $('loader').classList.add('hidden');
+      }
+    }
+
+    // Service Worker registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW reg failed:', err));
+      });
+    }
+
+    // Config check
+    if (CONFIG.SHEET_ID.startsWith('YOUR_') || CONFIG.SCRIPT_URL.startsWith('YOUR_')) {
+      $('loader').classList.add('hidden');
+      document.body.innerHTML = `
+        <div style="padding:40px 24px;text-align:center;color:var(--text)">
+          <div style="font-size:48px;margin-bottom:16px">⚙️</div>
+          <h2 style="margin-bottom:12px">초기 설정이 필요해요</h2>
+          <p style="color:var(--text-dim);font-size:14px;line-height:1.6">
+            <code>index.html</code>의 <code>CONFIG</code> 객체에서<br/>
+            <code>SHEET_ID</code>와 <code>SCRIPT_URL</code>을<br/>
+            본인 것으로 교체하세요.<br/><br/>
+            자세한 내용은 <code>setup-guide.md</code> 참고
+          </p>
+        </div>
+      `;
+    } else {
+      loadAll();
+    }
+  </script>
+</body>
+</html>
