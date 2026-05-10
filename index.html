@@ -431,6 +431,37 @@
       color: var(--green-deep);
       font-weight: 600;
     }
+    /* ─── TOGGLE ROW (optional features) ─── */
+    .toggle-row {
+      display: flex; justify-content: space-between; align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+    }
+    .toggle-row .label-text {
+      font-size: 14px; font-weight: 500; color: var(--text);
+    }
+    .toggle-row .label-hint {
+      font-size: 11px; color: var(--text-dim); margin-top: 2px;
+    }
+    .toggle-pill {
+      padding: 7px 16px;
+      border-radius: 999px;
+      background: var(--surface-3);
+      color: var(--text-dim);
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      transition: all .15s;
+      flex-shrink: 0;
+    }
+    .toggle-pill[data-on="true"] {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+      box-shadow: 0 2px 6px rgba(63,116,72,0.25);
+    }
     .photo-upload {
       width: 100%;
       aspect-ratio: 16/10;
@@ -816,14 +847,26 @@
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">비료 주기 (일)</label>
-              <input type="number" id="fFertInterval" min="0" max="365" value="30" placeholder="0=사용안함" />
+          <div class="form-group">
+            <div class="toggle-row">
+              <div>
+                <div class="label-text">🌾 비료 관리</div>
+                <div class="label-hint">비료를 정기적으로 주는 식물만 켜세요</div>
+              </div>
+              <button type="button" class="toggle-pill" id="fertToggle" data-on="false">사용 안 함</button>
             </div>
-            <div class="form-group">
-              <label class="form-label">최근 비료일</label>
-              <input type="date" id="fLastFert" />
+          </div>
+
+          <div id="fertFields" style="display:none">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">비료 주기 (일)</label>
+                <input type="number" id="fFertInterval" min="1" max="365" value="30" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">최근 비료일</label>
+                <input type="date" id="fLastFert" />
+              </div>
             </div>
           </div>
 
@@ -997,6 +1040,20 @@
       });
     });
 
+    // Fertilizer toggle behavior
+    document.addEventListener('DOMContentLoaded', () => {
+      const fertBtn = document.getElementById('fertToggle');
+      if (fertBtn) {
+        fertBtn.addEventListener('click', () => {
+          const on = fertBtn.dataset.on === 'true';
+          const next = !on;
+          fertBtn.dataset.on = String(next);
+          fertBtn.textContent = next ? '사용 중' : '사용 안 함';
+          document.getElementById('fertFields').style.display = next ? '' : 'none';
+        });
+      }
+    });
+
     // ╔═══════════════════════════════════════╗
     // ║      GOOGLE SHEETS READ (gviz)         ║
     // ╚═══════════════════════════════════════╝
@@ -1018,7 +1075,14 @@
           script.remove();
           try {
             if (!resp || !resp.table) {
-              reject(new Error(`'${sheetName}' 응답 형식 오류`));
+              let errMsg = `'${sheetName}' 응답 형식 오류`;
+              if (resp && resp.status === 'error' && resp.errors && resp.errors.length) {
+                const e0 = resp.errors[0];
+                errMsg = `'${sheetName}': ${e0.message || e0.detailed_message || 'gviz error'}`;
+                if (e0.reason) errMsg += ` (${e0.reason})`;
+              }
+              console.error('[plant-keeper] gviz raw response for', sheetName, ':', resp);
+              reject(new Error(errMsg));
               return;
             }
             const cols = resp.table.cols.map(c => c.label || c.id);
@@ -1260,13 +1324,13 @@
           <div class="detail-title">${escHtml(p.name)}</div>
           <div class="detail-sub">${escHtml(p.location || '위치 미지정')} · ${escHtml(p.light_level || '반음지')}</div>
 
-          <div class="detail-actions">
+          <div class="detail-actions" style="${(+p.fertilizer_interval_days > 0) ? '' : 'grid-template-columns:1fr'}">
             <button class="quick-btn water" onclick="quickAction('${p.id}','water')">
               <span class="ico">💧</span><span>물 줬어요</span>
             </button>
             ${(+p.fertilizer_interval_days > 0)
               ? `<button class="quick-btn fert" onclick="quickAction('${p.id}','fert')"><span class="ico">🌾</span><span>비료 줬어요</span></button>`
-              : `<button class="quick-btn" style="opacity:.4" disabled><span class="ico">🌾</span><span>비료 미사용</span></button>`}
+              : ''}
           </div>
 
           <div class="info-grid">
@@ -1344,8 +1408,15 @@
       $('fRepotDate').value = isEdit ? (plant.last_repot_date || '') : '';
       $('fWaterInterval').value = isEdit ? (plant.watering_interval_days || 7) : 7;
       $('fLastWatered').value = isEdit ? (plant.last_watered_date || '') : today();
-      $('fFertInterval').value = isEdit ? (plant.fertilizer_interval_days || 0) : 30;
+
+      // 비료 토글: 신규는 기본 OFF, 수정시 기존 값 따라감
+      const fertOn = isEdit && +plant.fertilizer_interval_days > 0;
+      $('fertToggle').dataset.on = String(fertOn);
+      $('fertToggle').textContent = fertOn ? '사용 중' : '사용 안 함';
+      $('fertFields').style.display = fertOn ? '' : 'none';
+      $('fFertInterval').value = fertOn ? plant.fertilizer_interval_days : 30;
       $('fLastFert').value = isEdit ? (plant.last_fertilized_date || '') : '';
+
       $('fLocation').value = isEdit ? (plant.location || '') : '';
       $('fNotes').value = isEdit ? (plant.notes || '') : '';
 
@@ -1413,6 +1484,7 @@
           const r = await callScript('uploadPhoto', state.pendingPhoto);
           photoUrl = r.fileId;
         }
+        const fertOn = $('fertToggle').dataset.on === 'true';
         const data = {
           id: $('plantId').value || ('p_' + Date.now()),
           name: $('fName').value.trim(),
@@ -1422,8 +1494,8 @@
           last_repot_date: $('fRepotDate').value,
           watering_interval_days: +$('fWaterInterval').value || 7,
           last_watered_date: $('fLastWatered').value,
-          fertilizer_interval_days: +$('fFertInterval').value || 0,
-          last_fertilized_date: $('fLastFert').value,
+          fertilizer_interval_days: fertOn ? (+$('fFertInterval').value || 30) : 0,
+          last_fertilized_date: fertOn ? $('fLastFert').value : '',
           light_level: document.querySelector('#lightRadio input:checked').value,
           location: $('fLocation').value.trim(),
           health_status: document.querySelector('#healthRadio input:checked').value,
