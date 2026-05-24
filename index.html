@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#FAF8F2" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="식물집사" />
+  <meta name="apple-mobile-web-app-title" content="푸릇" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <title>🌱 식물집사 · Plant Keeper</title>
+  <title>🌱 푸릇 · Pureut</title>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
   <style>
     :root {
@@ -239,6 +239,17 @@
       transition: transform .1s, box-shadow .1s;
     }
     .today-action:active { transform: scale(.95); box-shadow: 0 1px 3px rgba(63,116,72,0.2); }
+    .today-dismiss {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      background: var(--surface-3);
+      color: var(--text-faint);
+      font-size: 14px;
+      flex-shrink: 0;
+      transition: background .12s, color .12s;
+    }
+    .today-dismiss:active { background: var(--red-soft); color: var(--red); }
 
     .empty-state {
       text-align: center;
@@ -286,6 +297,12 @@
       font-size: 14px; font-weight: 600;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       color: var(--text);
+    }
+    .plant-nickname {
+      font-size: 11px; font-weight: 500;
+      color: var(--text-dim);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 2px;
     }
     .plant-badge {
       position: absolute;
@@ -518,18 +535,18 @@
     /* ─── PLANT DETAIL ─── */
     .detail-hero {
       width: 100%;
-      aspect-ratio: 4/3;
+      aspect-ratio: 16/9;
       background: var(--green-tint);
       object-fit: cover;
     }
     .detail-hero-placeholder {
       width: 100%;
-      aspect-ratio: 4/3;
+      aspect-ratio: 16/9;
       background: linear-gradient(135deg, #E8F0E5 0%, #C5D8C0 100%);
       display: flex; align-items: center; justify-content: center;
-      font-size: 90px; opacity: 0.6;
+      font-size: 64px; opacity: 0.6;
     }
-    .detail-content { padding: 20px 20px 28px; }
+    .detail-content { padding: 16px 20px 0; }
     .detail-title {
       font-size: 24px; font-weight: 700;
       letter-spacing: -0.02em;
@@ -538,7 +555,7 @@
     }
     .detail-sub {
       font-size: 13px; color: var(--text-dim);
-      margin-bottom: 18px;
+      margin-bottom: 12px;
       font-weight: 500;
     }
     .detail-actions {
@@ -718,6 +735,174 @@
       background: transparent; color: var(--text-dim);
       padding: 6px; font-size: 14px; box-shadow: none;
     }
+
+    /* ─── AI 자동완성 버튼 ─── */
+    .ai-fill-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 11px 14px;
+      margin-top: 8px;
+      background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
+      border: 1px solid #c5d3f6;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      color: #3b5bdb;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .ai-fill-btn:hover { background: linear-gradient(135deg, #e4ebff, #dce8fd); }
+    .ai-fill-btn:active { transform: scale(.98); }
+    .ai-fill-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .ai-fill-btn .ai-icon { font-size: 15px; }
+
+    /* ─── 식물 소개 카드 (폼 내 미리보기 + 상세 모달) ─── */
+    .plant-desc-card {
+      margin-top: 10px;
+      background: linear-gradient(135deg, #f4f9f1 0%, #ecf5e8 100%);
+      border: 1px solid #c8dfc0;
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+    .plant-desc-card .desc-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green-deep);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .plant-desc-card .desc-origin {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .plant-desc-card .desc-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+    .plant-desc-card .desc-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green-deep);
+      border: 1px solid rgba(92,150,99,0.2);
+    }
+    .plant-desc-card .desc-text {
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.6;
+    }
+
+    /* 상세 모달 내 소개 카드 */
+    .detail-desc-card {
+      margin: 0 20px 16px;
+      background: linear-gradient(135deg, #f4f9f1 0%, #ecf5e8 100%);
+      border: 1px solid #c8dfc0;
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+    .detail-desc-card .desc-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green-deep);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .detail-desc-card .desc-origin {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .detail-desc-card .desc-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+    .detail-desc-card .desc-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green-deep);
+      border: 1px solid rgba(92,150,99,0.2);
+    }
+    .detail-desc-card .desc-text {
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.6;
+    }
+
+    /* 케어 가이드 카드 */
+    .care-guide-card {
+      margin: 0 20px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .care-guide-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-mid);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 12px 14px 8px;
+    }
+    .care-guide-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border-soft);
+      border-top: 1px solid var(--border-soft);
+    }
+    .care-item {
+      background: var(--surface);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .care-item-label {
+      font-size: 11px;
+      color: var(--text-faint);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .care-item-val {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+      line-height: 1.4;
+    }
+    .care-tip {
+      grid-column: 1 / -1;
+      background: #fffbf0;
+      padding: 11px 14px;
+      font-size: 12px;
+      color: var(--text-mid);
+      line-height: 1.5;
+      border-top: 1px solid var(--border-soft);
+    }
+    .care-tip-label {
+      font-weight: 700;
+      color: var(--orange);
+      margin-bottom: 2px;
+      font-size: 11px;
+    }
   </style>
 </head>
 <body>
@@ -734,7 +919,7 @@
       <div class="brand">
         <div class="brand-row">
           <span class="brand-logo">🌱</span>
-          <span class="brand-title">식물집사</span>
+          <span class="brand-title">푸릇</span>
         </div>
         <div class="brand-sub" id="todayDate">—</div>
       </div>
@@ -818,6 +1003,22 @@
           <div class="form-group">
             <label class="form-label">이름 *</label>
             <input type="text" id="fName" placeholder="예: 몬스테라 알보, 루비고무나무" required maxlength="40" />
+            <button type="button" class="ai-fill-btn" id="aiFillBtn" onclick="aiFillPlantInfo()">
+              <span class="ai-icon">✨</span>
+              <span id="aiFillLabel">AI로 관리 정보 자동완성</span>
+            </button>
+            <input type="hidden" id="fPlantDesc" />
+            <div id="plantDescPreview" class="plant-desc-card" style="display:none">
+              <div class="desc-label">🌿 식물 소개</div>
+              <div class="desc-origin" id="pdOrigin"></div>
+              <div class="desc-features" id="pdFeatures"></div>
+              <div class="desc-text" id="pdText"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">닉네임</label>
+            <input type="text" id="fNickname" placeholder="예: 몬이, 우리집 막내 🌿" maxlength="30" />
           </div>
 
           <div class="form-row">
@@ -1024,8 +1225,17 @@
     const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
     // Modal control
-    const openModal = (id) => $(id).classList.add('active');
-    const closeModal = (id) => $(id).classList.remove('active');
+    const openModal = (id) => {
+      $(id).classList.add('active');
+      document.body.style.overflow = 'hidden';
+    };
+    const closeModal = (id) => {
+      $(id).classList.remove('active');
+      // 열려있는 모달이 없으면 스크롤 복원
+      if (!document.querySelector('.modal-backdrop.active')) {
+        document.body.style.overflow = '';
+      }
+    };
     document.querySelectorAll('[data-close]').forEach(btn => {
       btn.onclick = () => closeModal(btn.dataset.close);
     });
@@ -1223,13 +1433,14 @@
             ? `<img class="today-thumb" src="${photoSrc}" alt="" onerror="this.outerHTML='<div class=today-thumb>🌿</div>'" />`
             : `<div class="today-thumb">🌿</div>`;
           const actionLabel = t.type === 'water' ? '💧 물줬어요' : '🌾 비료줬어요';
-          return `<div class="today-card ${t.urgent ? 'overdue' : ''}">
+          return `<div class="today-card ${t.urgent ? 'overdue' : ''}" id="task-${t.plant.id}-${t.type}">
             ${thumb}
             <div class="today-info">
-              <div class="today-name">${escHtml(t.plant.name)}</div>
+              <div class="today-name">${escHtml(t.plant.nickname || t.plant.name)}</div>
               <div class="today-meta">${escHtml(t.label)}</div>
             </div>
             <button class="today-action" onclick="quickAction('${t.plant.id}','${t.type}')">${actionLabel}</button>
+            <button class="today-dismiss" onclick="dismissTask('${t.plant.id}','${t.type}')" title="할 일 지우기">✕</button>
           </div>`;
         }).join('');
       }
@@ -1253,7 +1464,8 @@
             <div class="plant-badge ${p.water.status}">${wIcon} ${escHtml(p.water.label)}</div>
             <div class="health-dot ${p.health_status === 'caution' ? 'caution' : (p.health_status === 'sick' ? 'sick' : '')}"></div>
             <div class="plant-info">
-              <div class="plant-name">${escHtml(p.name)}</div>
+              <div class="plant-name">${escHtml(p.nickname || p.name)}</div>
+              ${p.nickname ? `<div class="plant-nickname">${escHtml(p.name)}</div>` : ''}
             </div>
           </div>`;
         }).join('');
@@ -1280,6 +1492,30 @@
         showToast('실패: ' + e.message, 'error');
       }
     };
+
+    // 할 일 카드 지우기 (기록 없이 화면에서만 제거, 새로고침 전까지 유지)
+    state.dismissedTasks = new Set();
+    window.dismissTask = function(plantId, type) {
+      state.dismissedTasks.add(`${plantId}-${type}`);
+      const card = document.getElementById(`task-${plantId}-${type}`);
+      if (card) {
+        card.style.transition = 'opacity .2s, transform .2s';
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(10px)';
+        setTimeout(() => { card.remove(); updateTodayCount(); }, 200);
+      }
+    };
+
+    function updateTodayCount() {
+      const remaining = document.querySelectorAll('#todayList .today-card').length;
+      $('todayCount').textContent = remaining;
+      if (remaining === 0) {
+        $('todayList').innerHTML = `<div class="empty-state">
+          <div class="ico">🌿</div>
+          <div class="msg">모든 식물이 만족스러워합니다</div>
+        </div>`;
+      }
+    }
 
     window.openPlantDetail = function(id) {
       const p = state.plants.find(x => x.id === id);
@@ -1321,8 +1557,11 @@
       $('plantDetailBody').innerHTML = `
         ${heroEl}
         <div class="detail-content">
-          <div class="detail-title">${escHtml(p.name)}</div>
-          <div class="detail-sub">${escHtml(p.location || '위치 미지정')} · ${escHtml(p.light_level || '반음지')}</div>
+          <div class="detail-title">${escHtml(p.nickname || p.name)}</div>
+          <div class="detail-sub">${p.nickname ? `${escHtml(p.name)} · ` : ''}${escHtml(p.location || '위치 미지정')} · ${escHtml(p.light_level || '반음지')}</div>
+        </div>
+        ${renderDetailDescHtml(p.plant_description)}
+        <div class="detail-content" style="padding-top:16px;padding-bottom:28px">
 
           <div class="detail-actions" style="${(+p.fertilizer_interval_days > 0) ? '' : 'grid-template-columns:1fr'}">
             <button class="quick-btn water" onclick="quickAction('${p.id}','water')">
@@ -1361,6 +1600,8 @@
         </div>
       `;
       openModal('plantDetailModal');
+      // 모달 내부 스크롤을 맨 위로
+      document.querySelector('#plantDetailModal .modal').scrollTop = 0;
     };
 
     window.openGrowthForm = function(plantId) {
@@ -1403,6 +1644,7 @@
       $('plantFormTitle').textContent = isEdit ? '식물 정보 수정' : '새 식물 등록';
       $('plantId').value = isEdit ? plant.id : '';
       $('fName').value = isEdit ? plant.name : '';
+      $('fNickname').value = isEdit ? (plant.nickname || '') : '';
       $('fPurchaseDate').value = isEdit ? (plant.purchase_date || '') : '';
       $('fVendor').value = isEdit ? (plant.vendor || '') : '';
       $('fRepotDate').value = isEdit ? (plant.last_repot_date || '') : '';
@@ -1419,6 +1661,15 @@
 
       $('fLocation').value = isEdit ? (plant.location || '') : '';
       $('fNotes').value = isEdit ? (plant.notes || '') : '';
+
+      // plant_description 복원
+      const descRaw = isEdit ? (plant.plant_description || '') : '';
+      $('fPlantDesc').value = descRaw;
+      if (descRaw) {
+        try { renderDescPreview(JSON.parse(descRaw)); } catch(e) { $('plantDescPreview').style.display = 'none'; }
+      } else {
+        $('plantDescPreview').style.display = 'none';
+      }
 
       // light radio
       const light = isEdit ? (plant.light_level || '반음지') : '반음지';
@@ -1447,6 +1698,120 @@
         delete $('photoPreview').dataset.existing;
       }
       openModal('plantFormModal');
+    }
+
+    // ╔═══════════════════════════════════════╗
+    // ║     AI 자동완성                         ║
+    // ╚═══════════════════════════════════════╝
+    const AI_WEBHOOK_URL = 'https://komorevee.app.n8n.cloud/webhook/plant-info';
+    const LIGHT_MAP = { high: '직사광', medium: '반음지', low: '음지' };
+
+    // 폼 내 소개 카드 렌더링
+    function renderDescPreview(desc) {
+      if (!desc) return;
+      $('pdOrigin').textContent = desc.origin ? '📍 ' + desc.origin : '';
+      $('pdOrigin').style.display = desc.origin ? '' : 'none';
+      $('pdFeatures').innerHTML = (desc.features || []).map(f => `<span class="desc-tag">${escHtml(f)}</span>`).join('');
+      $('pdText').textContent = desc.description || '';
+      $('plantDescPreview').style.display = '';
+    }
+
+    // 상세 모달용 소개 카드 HTML 생성
+    function renderDetailDescHtml(descJson) {
+      if (!descJson) return '';
+      let desc;
+      try { desc = typeof descJson === 'string' ? JSON.parse(descJson) : descJson; } catch(e) { return ''; }
+
+      // 식물 소개 카드
+      const originHtml = desc.origin ? `<div class="desc-origin">📍 ${escHtml(desc.origin)}</div>` : '';
+      const tagsHtml = (desc.features || []).length
+        ? `<div class="desc-features">${desc.features.map(f=>`<span class="desc-tag">${escHtml(f)}</span>`).join('')}</div>` : '';
+      const textHtml = desc.description ? `<div class="desc-text">${escHtml(desc.description)}</div>` : '';
+      const introCard = (originHtml || tagsHtml || textHtml)
+        ? `<div class="detail-desc-card">
+            <div class="desc-label">🌿 식물 소개</div>
+            ${originHtml}${tagsHtml}${textHtml}
+          </div>` : '';
+
+      // 케어 가이드 카드
+      const c = desc.care_guide;
+      let careCard = '';
+      if (c) {
+        const items = [
+          { icon: '💧', label: '물주기', val: c.water },
+          { icon: '☀️', label: '광량',   val: c.light },
+          { icon: '🌡️', label: '온도',   val: c.temperature },
+          { icon: '💦', label: '습도',   val: c.humidity },
+        ].filter(i => i.val);
+        const tipHtml = c.tip
+          ? `<div class="care-tip"><div class="care-tip-label">⚠️ 주의사항</div>${escHtml(c.tip)}</div>` : '';
+        if (items.length) {
+          careCard = `<div class="care-guide-card">
+            <div class="care-guide-title">🪴 관리 방법</div>
+            <div class="care-guide-grid">
+              ${items.map(i => `<div class="care-item">
+                <div class="care-item-label">${i.icon} ${escHtml(i.label)}</div>
+                <div class="care-item-val">${escHtml(i.val)}</div>
+              </div>`).join('')}
+            </div>
+            ${tipHtml}
+          </div>`;
+        }
+      }
+
+      return introCard + careCard;
+    }
+
+    async function aiFillPlantInfo() {
+      const name = $('fName').value.trim();
+      if (!name) {
+        showToast('먼저 식물 이름을 입력하세요 🌿');
+        $('fName').focus();
+        return;
+      }
+
+      const btn   = $('aiFillBtn');
+      const label = $('aiFillLabel');
+      btn.disabled = true;
+      label.textContent = 'AI가 정보를 불러오는 중...';
+
+      try {
+        const res = await fetch(AI_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plantName: name })
+        });
+        if (!res.ok) throw new Error(`서버 오류 (${res.status})`);
+        const data = await res.json();
+
+        // 물주기
+        if (data.watering_interval_days) $('fWaterInterval').value = data.watering_interval_days;
+
+        // 비료 — 토글 상태는 건드리지 않고 주기 값만 업데이트
+        if (data.fertilizer_interval_days > 0) {
+          $('fFertInterval').value = data.fertilizer_interval_days;
+        }
+
+        // 광량
+        const lightVal = LIGHT_MAP[data.light_level] || '반음지';
+        document.querySelectorAll('#lightRadio input').forEach(r => {
+          r.checked = (r.value === lightVal);
+          r.closest('.radio-pill').classList.toggle('active', r.checked);
+        });
+
+        // 식물 소개 (메모 대신 별도 필드에 저장)
+        if (data.plant_description) {
+          $('fPlantDesc').value = JSON.stringify(data.plant_description);
+          renderDescPreview(data.plant_description);
+        }
+
+        showToast('✓ AI 자동완성 완료', 'success');
+      } catch (e) {
+        showToast('AI 정보 로드 실패: ' + e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        label.textContent = 'AI로 관리 정보 자동완성';
+      }
     }
 
     // ╔═══════════════════════════════════════╗
@@ -1488,6 +1853,7 @@
         const data = {
           id: $('plantId').value || ('p_' + Date.now()),
           name: $('fName').value.trim(),
+          nickname: $('fNickname').value.trim(),
           photo_url: photoUrl,
           purchase_date: $('fPurchaseDate').value,
           vendor: $('fVendor').value.trim(),
@@ -1500,6 +1866,7 @@
           location: $('fLocation').value.trim(),
           health_status: document.querySelector('#healthRadio input:checked').value,
           notes: $('fNotes').value.trim(),
+          plant_description: $('fPlantDesc').value,
           status: 'active'
         };
         const isEdit = !!$('plantId').value;
@@ -1575,7 +1942,7 @@
       const body = due.length === 1
         ? `${due[0].name} 식물에 물을 줄 시간이에요`
         : `${due.length}개 식물이 물을 기다리고 있어요`;
-      reg.showNotification('🌱 식물집사', {
+      reg.showNotification('🌱 푸릇', {
         body,
         icon: 'icon-192.png',
         badge: 'icon-192.png',
