@@ -1235,18 +1235,49 @@
     };
     const escHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-    // Modal control
+    // Modal control with browser back-button integration
+    // 모달이 열릴 때 history에 항목 추가 → 뒤로가기 시 popstate에서 모달만 닫음
+    const modalStack = []; // 현재 열린 모달 id들 (열린 순서대로)
+    let _skipNextPopstate = false; // closeModal이 history.back을 트리거할 때 중복 처리 방지
+
     const openModal = (id) => {
       $(id).classList.add('active');
       document.body.style.overflow = 'hidden';
+      modalStack.push(id);
+      // history에 모달 상태 푸시 (뒤로가기 한 번 = 모달 닫기 한 번)
+      history.pushState({ modal: id }, '', '');
     };
-    const closeModal = (id) => {
+
+    // 내부 DOM 정리만 수행 (history는 별도로 관리)
+    const _closeDom = (id) => {
       $(id).classList.remove('active');
-      // 열려있는 모달이 없으면 스크롤 복원
+      const idx = modalStack.lastIndexOf(id);
+      if (idx !== -1) modalStack.splice(idx, 1);
       if (!document.querySelector('.modal-backdrop.active')) {
         document.body.style.overflow = '';
       }
     };
+
+    // 외부에서 호출되는 닫기: history도 함께 정리
+    const closeModal = (id) => {
+      if (modalStack.includes(id) && modalStack[modalStack.length - 1] === id) {
+        // 가장 위에 있는 모달 닫기: history.back() 사용 (popstate가 알아서 DOM 정리)
+        history.back();
+      } else {
+        // 스택 중간에 있는 모달 닫기 (드문 케이스): DOM만 정리
+        _closeDom(id);
+      }
+    };
+
+    // 뒤로가기 버튼 처리: 모달이 열려 있으면 가장 위 모달만 닫고 앱 종료 방지
+    window.addEventListener('popstate', (e) => {
+      if (modalStack.length > 0) {
+        const top = modalStack[modalStack.length - 1];
+        _closeDom(top);
+      }
+    });
+
+    // X/취소 버튼 → closeModal 호출 (위 통일된 흐름 사용)
     document.querySelectorAll('[data-close]').forEach(btn => {
       btn.onclick = () => closeModal(btn.dataset.close);
     });
